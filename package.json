@@ -11,7 +11,9 @@
   ],
   "activationEvents": [
     "onView:nethammer-session-view",
-    "onCommand:nethammer-session.login"
+    "onCommand:nethammer-session.login",
+    "onCommand:nethammer-session.is_session",
+    "onCommand:nethammer-session.test"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -19,6 +21,14 @@
       {
         "command": "nethammer-session.login",
         "title": "Login NetHammer"
+      },
+      {
+        "command": "nethammer-session.is_session",
+        "title": "Is Session NetHammer"
+      },
+      {
+        "command": "nethammer-session.test",
+        "title": "Test NetHammer"
       }
     ],
     "views": {
@@ -40,6 +50,18 @@
           "icon": "media/favicon.svg"
         }
       ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "nethammer-session",
+      "properties": {
+        "nethammersession.token": {
+          "type": ["string"],
+          "scope": "resource",
+          "default": "",
+          "description": "Token user"
+        }
+      }
     }
   },
   "scripts": {
@@ -64,6 +86,8 @@
     "@vscode/test-electron": "^2.1.5"
   },
   "dependencies": {
-    "@vscode/webview-ui-toolkit": "^1.1.0"
+    "@vscode/webview-ui-toolkit": "^1.1.0",
+    "axios": "^1.0.0",
+    "fetch-session": "^1.1.8"
   }
 }
