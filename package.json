@@ -3,7 +3,7 @@
   "displayName": "nethammer_session",
   "description": "extension start and stop session in nethammer site",
   "publisher": "l4legenda",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "icon": "media/favicon.png",
   "engines": {
     "vscode": "^1.71.0"

@@ -33,15 +33,7 @@ class ColorViewProvider implements vscode.WebviewViewProvider {
 		};
 
 		webviewView.webview.html = this._getHtml(webviewView.webview);
-		if(await is_login()){
-			setTimeout(async ()=>{
-				if(await is_session()){
-					this._view?.webview.postMessage({"visible": "close-session"});
-				} else {
-					this._view?.webview.postMessage({"visible": "open-session"});
-				}
-			}, 200);
-		}
+		
 
 		
 
@@ -53,6 +45,16 @@ class ColorViewProvider implements vscode.WebviewViewProvider {
 				}else if(message.command === 'close-session') {
 					await close_session(message.report);
 					this._view?.webview.postMessage({"visible": "open-session"});
+				}else if(message.command === 'is-session') {
+					if(await is_login()){
+						setTimeout(async ()=>{
+							if(await is_session()){
+								this._view?.webview.postMessage({"visible": "close-session"});
+							} else {
+								this._view?.webview.postMessage({"visible": "open-session"});
+							}
+						}, 300);
+					}
 				}
 			},
 			undefined,
@@ -102,6 +104,12 @@ class ColorViewProvider implements vscode.WebviewViewProvider {
 				const textAreaCloseSession = document.getElementById('text-close-session');
 				const sectionOpenSession = document.getElementById('section-open-session');
 				const sectionCloseSession = document.getElementById('section-close-session');
+
+				window.onload = () => {
+					vscode.postMessage({
+                        command: 'is-session'
+                    })
+				}
 
 				btnOpenSession.onclick = function(){
 					vscode.postMessage({
