@@ -40,8 +40,6 @@ class ColorViewProvider implements vscode.WebviewViewProvider {
 				} else {
 					this._view?.webview.postMessage({"visible": "open-session"});
 				}
-
-				this._view?.webview.postMessage({"visible": "close-session"});
 			}, 200);
 		}
 
