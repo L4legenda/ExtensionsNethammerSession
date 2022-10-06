@@ -5,7 +5,7 @@ export const open_session = async () => {
     
     const config = vscode.workspace.getConfiguration('nethammersession');
 
-    const request = await fetch("http://127.0.0.1:8000/open_session", {
+    const request = await fetch("http://23.105.226.161:9090/open_session", {
         method: "POST",
         body: JSON.stringify({
             "token": config.get("token"),

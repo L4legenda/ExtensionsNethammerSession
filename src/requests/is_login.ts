@@ -5,7 +5,7 @@ export const is_login = async () => {
     
     const config = vscode.workspace.getConfiguration('nethammersession');
 
-    const request = await fetch("http://127.0.0.1:8000/is_login", {
+    const request = await fetch("http://23.105.226.161:9090/is_login", {
         method: "POST",
         body: JSON.stringify({
             "token": config.get("token"),
@@ -26,6 +26,8 @@ export const is_login = async () => {
     if(requestData?.success) {
         return true;
     }else if(requestData?.error) {
+        return false;
+    }else {
         return false;
     }
 

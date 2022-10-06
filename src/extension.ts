@@ -34,23 +34,27 @@ class ColorViewProvider implements vscode.WebviewViewProvider {
 
 		webviewView.webview.html = this._getHtml(webviewView.webview);
 		if(await is_login()){
-			if(await is_session()){
-				this._view.webview.postMessage({"visible": "close-session"});
-			} else {
-				this._view.webview.postMessage({"visible": "open-session"});
-			}
+			setTimeout(async ()=>{
+				if(await is_session()){
+					this._view?.webview.postMessage({"visible": "close-session"});
+				} else {
+					this._view?.webview.postMessage({"visible": "open-session"});
+				}
+
+				this._view?.webview.postMessage({"visible": "close-session"});
+			}, 200);
 		}
+
 		
-		const _view = this._view;
 
 		webviewView.webview.onDidReceiveMessage(
 			async (message) => {
 				if(message.command === 'open-session') {
 					await open_session();
-					_view.webview.postMessage({"visible": "close-session"});
+					this._view?.webview.postMessage({"visible": "close-session"});
 				}else if(message.command === 'close-session') {
 					await close_session(message.report);
-					_view.webview.postMessage({"visible": "open-session"});
+					this._view?.webview.postMessage({"visible": "open-session"});
 				}
 			},
 			undefined,
@@ -143,7 +147,7 @@ export function activate(context: vscode.ExtensionContext) {
 		
 		const config = vscode.workspace.getConfiguration('nethammersession');
 	
-		const request = await fetch("http://127.0.0.1:8000/login", {
+		const request = await fetch("http://23.105.226.161:9090/login", {
 			method: "POST",
 			body: JSON.stringify({
 				"username": username,
