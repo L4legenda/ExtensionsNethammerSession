@@ -2,7 +2,9 @@
   "name": "nethammer-session",
   "displayName": "nethammer_session",
   "description": "extension start and stop session in nethammer site",
-  "version": "0.0.1",
+  "publisher": "l4legenda",
+  "version": "0.0.3",
+  "icon": "media/favicon.png",
   "engines": {
     "vscode": "^1.71.0"
   },
@@ -56,7 +58,9 @@
       "title": "nethammer-session",
       "properties": {
         "nethammersession.token": {
-          "type": ["string"],
+          "type": [
+            "string"
+          ],
           "scope": "resource",
           "default": "",
           "description": "Token user"
@@ -86,8 +90,10 @@
     "@vscode/test-electron": "^2.1.5"
   },
   "dependencies": {
+    "@microsoft/fast-react-wrapper": "^0.1.48",
     "@vscode/webview-ui-toolkit": "^1.1.0",
     "axios": "^1.0.0",
-    "fetch-session": "^1.1.8"
+    "fetch-session": "^1.1.8",
+    "react": "^18.2.0"
   }
 }
