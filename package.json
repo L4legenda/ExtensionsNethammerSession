@@ -3,7 +3,7 @@
   "displayName": "nethammer_session",
   "description": "extension start and stop session in nethammer site",
   "publisher": "l4legenda",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "icon": "media/favicon.png",
   "engines": {
     "vscode": "^1.71.0"
@@ -15,7 +15,8 @@
     "onView:nethammer-session-view",
     "onCommand:nethammer-session.login",
     "onCommand:nethammer-session.is_session",
-    "onCommand:nethammer-session.test"
+    "onCommand:nethammer-session.test",
+    "onCommand:nethammer-session.token-wakatime"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -31,6 +32,10 @@
       {
         "command": "nethammer-session.test",
         "title": "Test NetHammer"
+      },
+      {
+        "command": "nethammer-session.token-wakatime",
+        "title": "Set WakaTime ApiKey in Nethammer"
       }
     ],
     "views": {
@@ -64,6 +69,14 @@
           "scope": "resource",
           "default": "",
           "description": "Token user"
+        },
+        "nethammersession.token_wakatime": {
+          "type": [
+            "string"
+          ],
+          "scope": "resource",
+          "default": "",
+          "description": "ApiKey WakaTime in Nethammer"
         }
       }
     }

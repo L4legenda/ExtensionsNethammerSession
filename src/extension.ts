@@ -7,6 +7,8 @@ import {is_login} from './requests/is_login';
 import {open_session} from './requests/open_session';
 import {close_session} from './requests/close_session';
 import fetch from 'node-fetch';
+import {wakatime_durations} from './requests/durations';
+import {formatDate} from './utilities/formatDate';
 
 class ColorViewProvider implements vscode.WebviewViewProvider {
 	public static readonly viewType = 'nethammer-session-view';
@@ -55,6 +57,45 @@ class ColorViewProvider implements vscode.WebviewViewProvider {
 							}
 						}, 300);
 					}
+				}else if(message.command === 'is-wakatime'){
+					const config = vscode.workspace.getConfiguration('nethammersession');
+					if(config.get("token_wakatime")){
+						this._view?.webview.postMessage({"visible": 'generate-text-session'});
+					}
+
+				}else if(message.command === 'generate-text-session'){
+					const response = await wakatime_durations();
+					const objProject: any = {};
+					if(response?.data){
+						const data = response.data;
+						for(const obj of data){
+							const name = obj.project;
+							if(objProject[name]){
+								objProject[name].duration += obj.duration;
+							}else {
+								objProject[name] = {
+									name: name,
+									duration: obj.duration
+								};
+							}
+						}
+					}
+					const reportStart = formatDate(response.start);
+					const reportStop = formatDate(response.end);
+
+					let reportProject = "";
+
+					for(const key in objProject){
+						const name = objProject[key].name;
+						const duration = objProject[key].duration;
+						const second = duration % 60;
+						const minute = Math.floor(duration / 60) % 60;
+						const hour = Math.floor((duration / 60) / 60);
+						reportProject += ` - ${name}: ${hour}ч ${minute}м\n`;
+					}
+
+					let report = `Отчет \nC ${reportStart} по ${reportStop}\n\nПроекты:\n${reportProject}`;
+					this._view?.webview.postMessage({"set-text-close-session": report});
 				}
 			},
 			undefined,
@@ -74,17 +115,21 @@ class ColorViewProvider implements vscode.WebviewViewProvider {
 			"toolkit.js",
 		  ]);
 		  const mainUri = getUri(webview, this._extensionUri, ["webview-ui", "main.js"]);
-		return `<!DOCTYPE html>
+		return /*html*/`<!DOCTYPE html>
 		<html lang="en">
 		<head>
 			<meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <script type="module" src="${toolkitUri}"></script>
           <script type="module" src="${mainUri}"></script>
+		  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
 		  
           <title>Hello World</title>
 		  <style>
 		  	#section-open-session, #section-close-session {
+				display: none;
+			}
+			#btn-generate-text-session {
 				display: none;
 			}
 		  </style>
@@ -94,20 +139,29 @@ class ColorViewProvider implements vscode.WebviewViewProvider {
           	<vscode-button style='width: 100%;' id="btn-open-session">Открыть сессию</vscode-button>
 		  </div>
 		  <div id="section-close-session">
-			<vscode-text-area resize="none" style='width: 100%;' id="text-close-session"></vscode-text-area>
+			<vscode-text-area resize="vertical" style='width: 100%;' id="text-close-session"></vscode-text-area>
           	<vscode-button style='width: 100%;' id="btn-close-session">Закрыть сессию</vscode-button>
+			<vscode-button style='width: 100%; margin-top: 6px;' id="btn-generate-text-session">Сгенерировать отчет</vscode-button>
 		  </div>
 			<script>
 			  	const vscode = acquireVsCodeApi();
+
 			  	const btnOpenSession = document.getElementById('btn-open-session');
 				const btnCloseSession = document.getElementById('btn-close-session');
+				const btnGenerateTextSession = document.getElementById('btn-generate-text-session');
+
 				const textAreaCloseSession = document.getElementById('text-close-session');
+
 				const sectionOpenSession = document.getElementById('section-open-session');
 				const sectionCloseSession = document.getElementById('section-close-session');
+				
 
 				window.onload = () => {
 					vscode.postMessage({
                         command: 'is-session'
+                    });
+					vscode.postMessage({
+                        command: 'is-wakatime'
                     })
 				}
 
@@ -124,6 +178,12 @@ class ColorViewProvider implements vscode.WebviewViewProvider {
                     })
 				}
 
+				btnGenerateTextSession.onclick = function() {
+					vscode.postMessage({
+                        command: 'generate-text-session',
+                    })
+				}
+
 
 				window.addEventListener('message', event => {
 					const message = event.data;
@@ -133,6 +193,10 @@ class ColorViewProvider implements vscode.WebviewViewProvider {
 					}else if(message.visible == 'open-session'){
 						sectionOpenSession.style.display = 'block';
 						sectionCloseSession.style.display = 'none';
+					}else if(message.visible == 'generate-text-session'){
+						btnGenerateTextSession.style.display = 'flex';
+					}else if(message['set-text-close-session']) {
+						textAreaCloseSession.value = message['set-text-close-session'];
 					}
 
 				})
@@ -185,12 +249,25 @@ export function activate(context: vscode.ExtensionContext) {
 		
 	} );
 
+	let wakatimeCommand = vscode.commands.registerCommand('nethammer-session.token-wakatime', async () => {
+		const token = await vscode.window.showInputBox({ placeHolder: 'API-token' });
+		
+		const config = vscode.workspace.getConfiguration('nethammersession');
+	
+		if(token){
+			config.update("token_wakatime", token, true);
+			vscode.window.showInformationMessage("Wakatime Token привязан к Nethammer");
+		}
+	} );
+
 	let isSessionCommand = vscode.commands.registerCommand('nethammer-session.is_session', is_session);
 
 	let testCommand = vscode.commands.registerCommand('nethammer-session.test', ()=>{
 		vscode.window.showInformationMessage("Test");
 		provider._view?.webview.postMessage({command: "ref"});
 	});
+
+
 
 	
 
@@ -200,6 +277,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(loginCommand);
 	context.subscriptions.push(isSessionCommand);
 	context.subscriptions.push(testCommand);
+	context.subscriptions.push(wakatimeCommand);
 	
 }
 
